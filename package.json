@@ -13,6 +13,9 @@
   "keywords": [
     "pagelet"
   ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "author": "wanghx",
   "license": "MIT",
   "dependencies": {
