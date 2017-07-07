@@ -61,6 +61,11 @@ function normalizeUrl(url, options) {
     const filePath = path.dirname(file.path);
     const requirePath = path.resolve(options.baseDir, url);
     url = path.relative(filePath, requirePath);
+
+    if (path.sep !== '/') {
+      url = url.replace(/\\/g, '/');
+    }
+
     if (url.charAt(0) !== '.') {
       url = './' + url;
     }
