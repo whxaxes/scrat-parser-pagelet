@@ -9,6 +9,16 @@
 
 > 为什么不做在 pagelet 中呢，因为 pagelet 是跑在运行时，而这些处理在编译时运行更好
 
+## 安装
+
+```bash
+npm install scrat-parser-pagelet --save-dev
+```
+
+```bash
+yarn add scrat-parser-pagelet --dev
+```
+
 ## 快速使用
 
 ```js
