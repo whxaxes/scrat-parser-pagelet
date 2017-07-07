@@ -181,6 +181,35 @@ transform({
 
 会自动对模板做优化，如果只有一个属性，就去除 $id，自动将链接转成相对链，自动将 alias 替换到页面中。
 
+### 自定义 processor
+
+允许覆盖组件的 processor，做一些自己想干的活。比如组件的压缩功能，就是在 text 这个 processor 中做的
+
+```js
+processor: {
+  text(el) {
+    // compress template
+    el.text = el.text
+      .replace(spaceReg, (_, l = '', r = '') => (
+        l + ((l || r) ? '' : ' ') + r
+      ));
+  },
+}
+```
+
+完全可以自定义个你自己觉得更好的压缩方法，再或者觉得组件对 require 或者 pagelet 的处理不够好，那么就覆盖组件的 require processor
+
+```js
+processor: {
+  pagelet(el) {
+    // do something
+  },
+  require(el) {
+    // do something
+  }
+}
+```
+
 [npm-url]: https://npmjs.org/package/scrat-parser-pagelet
 [npm-image]: http://img.shields.io/npm/v/scrat-parser-pagelet.svg
 [travis-url]: https://travis-ci.org/whxaxes/scrat-parser-pagelet
