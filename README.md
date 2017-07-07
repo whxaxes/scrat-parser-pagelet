@@ -137,7 +137,7 @@ attrAlias: {
 组件还提供一个 transformer ，可以根据你设定的规则，对全部页面进行一次批量处理替换。单独将以下逻辑放到一个 js 文件中执行即可。
 
 ```js
-const transform = require('fis3-parser-pagelet/transform');
+const transform = require('scrat-parser-pagelet/transform');
 transform({
   src: [path.resolve(__dirname, './app/**/*.tpl')],
   dist: path.resolve(__dirname, './app/'),
