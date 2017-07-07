@@ -1,0 +1,1 @@
+{% require $id="widget/test" %}

@@ -1,0 +1,31 @@
+{
+  "name": "scrat-parser-pagelet",
+  "version": "1.0.0",
+  "description": "parser of pagelet",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run lint && npm run cov",
+    "test-local": "mocha test/**/*.test.js -r intelli-espower-loader",
+    "cov": "istanbul cover _mocha test/**/*.test.js",
+    "lint": "eslint --ext .js .",
+    "lint-fix": "eslint --ext .js --fix ."
+  },
+  "keywords": [
+    "pagelet"
+  ],
+  "author": "wanghx",
+  "license": "MIT",
+  "dependencies": {
+    "node-mus": "~1.6.2",
+    "through2": "^2.0.3",
+    "vinyl-fs": "^2.4.4"
+  },
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-egg": "^3.2.0",
+    "intelli-espower-loader": "^1.0.1",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.2.0",
+    "power-assert": "^1.4.2"
+  }
+}
