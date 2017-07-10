@@ -19,7 +19,7 @@ function normalize(el, options) {
   });
 
   el._expr = list.map(item => {
-    if (list.length === 1 || !item.key) {
+    if (!item.key) {
       return el.require
         ? normalizeUrl(item.value, options) || item.value
         : item.value;

@@ -20,13 +20,13 @@ describe('transform', () => {
     }, () => {
       let str = fs.readFileSync(path.resolve(__dirname, './dist/page/test/test.tpl')).toString();
       assert(str.indexOf('{% require _id="./w-m" blab="123123" %}') >= 0);
-      assert(str.indexOf('{% require "./w-s" %}') >= 0);
+      assert(str.indexOf('{% require _id="./w-s" %}') >= 0);
       assert(str.indexOf('{% require _id="~/common" abc="123123" %}') >= 0);
-      assert(str.indexOf('{% pagelet "test" %}') >= 0);
+      assert(str.indexOf('{% pagelet _id="test" %}') >= 0);
       str = fs.readFileSync(path.resolve(__dirname, './dist/page/test/w-m/w-m.tpl')).toString();
-      assert(str.indexOf('{% require "../w-s" %}') >= 0);
+      assert(str.indexOf('{% require _id="../w-s" %}') >= 0);
       str = fs.readFileSync(path.resolve(__dirname, './dist/widget/common/common.tpl')).toString();
-      assert(str.indexOf('{% require "~/test" %}') >= 0);
+      assert(str.indexOf('{% require _id="~/test" %}') >= 0);
       done();
     });
   });
