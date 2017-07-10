@@ -1,6 +1,6 @@
 {
   "name": "scrat-parser-pagelet",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "parser of pagelet",
   "main": "index.js",
   "scripts": {
