@@ -21,7 +21,7 @@ yarn add scrat-parser-pagelet --dev
 
 ```js
 scrat.match('{widget, page, app/view}/**.tpl', {
-  parser: [{
+  parser: [
     scrat.plugin('pagelet', {
       baseDir: path.resolve(__dirname, './app/component/'),
       compress: true,
@@ -32,7 +32,7 @@ scrat.match('{widget, page, app/view}/**.tpl', {
         '~': 'widget',
       },
     }, 'append'),
-  }]
+  ]
 })
 ```
 
