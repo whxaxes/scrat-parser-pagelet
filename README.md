@@ -7,8 +7,6 @@
 
 在 scrat pagelet 模式中，对 pagelet 的模板能力进行一些拓展
 
-> 为什么不做在 pagelet 中呢，因为 pagelet 是跑在运行时，而这些处理在编译时运行更好
-
 ## 安装
 
 ```bash
@@ -23,7 +21,7 @@ yarn add scrat-parser-pagelet --dev
 
 ```js
 scrat.match('{widget, page, app/view}/**.tpl', {
-  parser: [{
+  parser: [
     scrat.plugin('pagelet', {
       baseDir: path.resolve(__dirname, './app/component/'),
       compress: true,
@@ -34,7 +32,7 @@ scrat.match('{widget, page, app/view}/**.tpl', {
         '~': 'widget',
       },
     }, 'append'),
-  }]
+  ]
 })
 ```
 
@@ -137,11 +135,11 @@ attrAlias: {
 组件还提供一个 transformer ，可以根据你设定的规则，对全部页面进行一次批量处理替换。单独将以下逻辑放到一个 js 文件中执行即可。
 
 ```js
-const transform = require('fis3-parser-pagelet/transform');
+const transform = require('scrat-parser-pagelet/transform');
 transform({
   src: [path.resolve(__dirname, './app/**/*.tpl')],
   dist: path.resolve(__dirname, './app/'),
-  baseDir: path.join(__dirname, './app/'),
+  baseDir: path.join(__dirname, './app/component/'),
   attrAlias: {
     _id: '$id',
   },
@@ -209,6 +207,21 @@ processor: {
   }
 }
 ```
+
+### 一些说明
+
+为什么不做在 pagelet 中呢
+
+> 因为 pagelet 是跑在运行时，而这些处理在编译时处理了更好。
+
+组件实现原理
+
+> 解析模板，生成 AST，再逐个节点处理即可。
+
+为什么不用 nunjucks 或者 swig 自己的 AST 解析器
+
+> swig 没看源码，反正 nunjucks 没有生成 AST 这个概念，是直接一边解析一边拼装方法字符串。所以没法用，刚好自己之前实现过一个类似于 nunjucks 的模板引擎 [mus](https://github.com/whxaxes/mus) ，就把 parser 拿过来用了。
+
 
 [npm-url]: https://npmjs.org/package/scrat-parser-pagelet
 [npm-image]: http://img.shields.io/npm/v/scrat-parser-pagelet.svg
