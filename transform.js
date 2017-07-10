@@ -101,8 +101,5 @@ module.exports = (options, callback) => {
       done(null, file);
     }))
     .pipe(vfs.dest(options.dist))
-    .pipe(through.obj(
-      (f, _, d) => d(null, f),
-      () => { callback(); }
-    ));
+    .on('end', callback);
 };
