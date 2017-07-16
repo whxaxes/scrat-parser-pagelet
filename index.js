@@ -4,7 +4,7 @@ const utils = require('./utils');
 const path = require('path');
 const parser = require('node-mus/lib/compile/parser');
 const quotReg = /^('|")|('|")$/g;
-const spaceReg = /(>|)(?:\s)+(<|)/g;
+const spaceReg = /(>|)(?:\t| )*(?:\r?\n)+(?:\t| )*(<|)/;
 
 function normalize(el, options) {
   const list = [];
@@ -50,8 +50,8 @@ function normalizeUrl(url, options) {
     return _url;
   }
 
-  options._alias = options._alias
-    || new RegExp(`^(${Object.keys(alias).map(item => utils.reStringFormat(item)).join('|')})`);
+  options._alias = options._alias ||
+    new RegExp(`^(${Object.keys(alias).map(item => utils.reStringFormat(item)).join('|')})`);
 
   // replace alias
   url = url.replace(options._alias, (_, key) => alias[key]);
@@ -95,11 +95,27 @@ module.exports = function(content, file, options) {
           return;
         }
 
+        let matches;
+        let newText = '';
+        let text = el.text;
         // compress template
-        el.text = el.text
-          .replace(spaceReg, (_, l = '', r = '') => (
-            l + ((l || r) ? '' : ' ') + r
-          ));
+        while ((matches = text.match(spaceReg))) {
+          const l = matches[1] || '';
+          const r = matches[2] || '';
+          const t = text.substring(0, matches.index);
+          newText += t + l;
+
+          // prevent comment in javascript
+          if (t.indexOf('//') >= 0) {
+            newText += '\n';
+          } else if (!l && !r) {
+            newText += ' ';
+          }
+          newText += r;
+          text = text.substring(matches.index + matches[0].length);
+        }
+
+        el.text = newText + text;
       },
     }, options.processor),
   });

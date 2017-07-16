@@ -31,6 +31,11 @@ const template = `
         {% endif %}
       </div>
     {% endpagelet %}
+
+    <script>
+      // test
+      var a = 123;
+    </script>
   
     {% require "~/test" %}
     {% require "~m/foot" %}
@@ -64,6 +69,8 @@ describe('parse', () => {
       realpath: path.join(__dirname, '../app/component/page/test/test.tpl')
     }, options);
 
+    assert(nstring.match(/\n/g).length === 1);
+    assert(nstring.indexOf('\nvar a = 123;') >= 0);
     assert(nstring.indexOf('require "./" + "lib.js"') >= 0);
     assert(nstring.indexOf('"./lib.js"') >= 0);
     assert(nstring.indexOf('require __pageUrl__') >= 0);
