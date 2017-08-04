@@ -60,14 +60,16 @@ function normalizeUrl(url, options) {
   if (url.charAt(0) === '.' && !path.extname(url)) {
     url = path.resolve(path.dirname(file.realpath), url)
       .replace(options.baseDir, '');
+  } else if (path.isAbsolute(url)) {
+    url = path.relative(options.baseDir, url);
+  }
 
-    if (path.sep !== '/') {
-      url = url.replace(/\\/g, '/');
-    }
+  if (path.sep !== '/') {
+    url = url.replace(/\\/g, '/');
+  }
 
-    if (url.charAt(0) === '/') {
-      url = url.substring(1);
-    }
+  if (url.charAt(0) === '/') {
+    url = url.substring(1);
   }
 
   return quot + url + quot;
