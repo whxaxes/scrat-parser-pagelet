@@ -101,6 +101,34 @@ describe('parse', () => {
     assert(nstring.indexOf('$id="gameList"') >= 0);
   });
 
+  it('should support resolve and full resolve', () => {
+    const nstring = pageletParser(`
+    {% pagelet _id="gameList", id="gameList", ref="gameList" %}
+       {% require "./w-rank-list", id="123" %}
+       {% require "~/w-rank-list" %}
+       {% require "index" %}
+       {% require "index$", id="123" %}
+    {% endpagelet %}
+    `, {
+      realpath: path.join(__dirname, '../app/component/page/test/test.tpl')
+    }, {
+      baseDir: path.join(__dirname, '../app/component'),
+      split: ',',
+      attrAlias: {
+        _id: '$id',
+      },
+      alias: {
+        '~': path.join(__dirname, '../app/component/widget'),
+        'index$': path.join(__dirname, '../app/component/widget/index'),
+      },
+    });
+
+    assert(nstring.indexOf('{% require "page/test/w-rank-list", id="123" %}') >= 0);
+    assert(nstring.indexOf('{% require "widget/w-rank-list" %}') >= 0);
+    assert(nstring.indexOf('{% require "widget/index" %}') >= 0);
+    assert(nstring.indexOf('{% require "index$", id="123" %}') >= 0);
+  })
+
   it('should support self defined tag', done => {
     pageletParser('{% css %}{% endcss %}', {
       realpath: path.join(__dirname, '../app/component/page/test/test.tpl')

@@ -69,11 +69,13 @@ scrat.match('{widget, page, app/view}/**.tpl', {
 
 ### 别名
 
-定义别名
+定义别名，跟 webpack 中的 alias 类似
 
 ```js
 alias: {
-  '~': 'widget'
+  '~': 'widget',
+  '~m': path.resolve(__dirname, './app/component/widget/mobile'),
+  'index$': path.resolve(__dirname, './app/component/page/index'),
 }
 ```
 
@@ -81,6 +83,16 @@ alias: {
 
 ```html
 {% require '~/B' %}
+{% require '~m/B' %}
+{% require 'index' %}
+```
+
+如果 baseDir 为 `path.resolve(__dirname, './app/component/')`，则上面的代码则会转为
+
+```html
+{% require 'widget/B' %}
+{% require 'widget/mobile/B' %}
+{% require 'page/index' %}
 ```
 
 ### 属性名映射

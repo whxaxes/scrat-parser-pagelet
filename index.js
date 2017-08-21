@@ -50,11 +50,25 @@ function normalizeUrl(url, options) {
     return _url;
   }
 
-  options._alias = options._alias ||
-    new RegExp(`^(${Object.keys(alias).map(item => utils.reStringFormat(item)).join('|')})`);
+  if (!options._alias) {
+    options._fullAlias = {};
+    const aliasList = Object.keys(alias)
+      .filter(item => {
+        // collect full alias
+        const isFullAlias = item.charAt(item.length - 1) === '$';
+        if (isFullAlias) {
+          const name = item.substring(0, item.length - 1);
+          options._fullAlias[name] = alias[item];
+        }
+        return !isFullAlias;
+      })
+      .sort((a, b) => b.length - a.length)
+      .map(item => utils.reStringFormat(item));
+    options._alias = new RegExp(`^(${aliasList.join('|')})`);
+  }
 
   // replace alias
-  url = url.replace(options._alias, (_, key) => alias[key]);
+  url = options._fullAlias[url] || url.replace(options._alias, (_, key) => alias[key]);
 
   // handle relative path only
   if (url.charAt(0) === '.' && !path.extname(url)) {
