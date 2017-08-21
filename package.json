@@ -1,6 +1,6 @@
 {
   "name": "scrat-parser-pagelet",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "parser of pagelet",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,11 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
+  "files": [
+    "index.js",
+    "transform.js",
+    "utils.js"
+  ],
   "author": "wanghx",
   "license": "MIT",
   "dependencies": {
