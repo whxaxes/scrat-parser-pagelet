@@ -46,7 +46,7 @@ function normalizeUrl(url, options) {
   }).trim();
 
   // ignore url if url was variable, having operator or ext name
-  if (!quot || path.extname(url) || url.indexOf(quot) >= 0) {
+  if (!quot || url.indexOf(quot) >= 0) {
     return _url;
   }
 
@@ -70,20 +70,22 @@ function normalizeUrl(url, options) {
   // replace alias
   url = options._fullAlias[url] || url.replace(options._alias, (_, key) => alias[key]);
 
-  // handle relative path only
-  if (url.charAt(0) === '.' && !path.extname(url)) {
-    url = path.resolve(path.dirname(file.realpath), url)
-      .replace(options.baseDir, '');
-  } else if (path.isAbsolute(url)) {
-    url = path.relative(options.baseDir, url);
+  if (url.charAt(0) === '.') {
+    url = path.resolve(path.dirname(file.realpath), url);
+  }
+
+  const ext = path.extname(url);
+  if (path.isAbsolute(url)) {
+    url = path.relative(
+      ext ? options.appDir : path.resolve(options.appDir, './component'),
+      url
+    );
+  } else if (ext) {
+    return _url;
   }
 
   if (path.sep !== '/') {
     url = url.replace(/\\/g, '/');
-  }
-
-  if (url.charAt(0) === '/') {
-    url = url.substring(1);
   }
 
   return quot + url + quot;
@@ -93,6 +95,7 @@ module.exports = function(content, file, options) {
   options.file = file;
   options.alias = options.alias || {};
   options.attrAlias = options.attrAlias || {};
+  options.appDir = path.resolve(options.root || process.cwd(), './app');
 
   const tree = utils.parseTemplate(content, {
     blockStart: options.blockStart,

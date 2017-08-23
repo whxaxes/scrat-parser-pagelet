@@ -23,7 +23,6 @@ yarn add scrat-parser-pagelet --dev
 scrat.match('{widget, page, app/view}/**.tpl', {
   parser: [
     scrat.plugin('pagelet', {
-      baseDir: path.resolve(__dirname, './app/component/'),
       compress: true,
       attrAlias: {
         _id: '$id',
@@ -40,7 +39,7 @@ scrat.match('{widget, page, app/view}/**.tpl', {
 
 |Name|Type|Describe|Default|
 |----|----|--------|-------|
-| baseDir | String | 模板的 root 目录，一般是 app/component 或者 app/components 下 | - |
+| root | String | 项目根目录 | process.cwd() |
 | compress | Boolean | 是否压缩模板 | false |
 | attrAlias | PlainObject | 属性映射 | - |
 | alias | PlainObject | 别名 | - |
@@ -87,7 +86,7 @@ alias: {
 {% require 'index' %}
 ```
 
-如果 baseDir 为 `path.resolve(__dirname, './app/component/')`，则上面的代码则会转为
+上面的代码则会转为
 
 ```html
 {% require 'widget/B' %}

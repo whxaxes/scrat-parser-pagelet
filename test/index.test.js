@@ -17,12 +17,13 @@ const template = `
         </div>
     
         <div class="right-side">
-          {% require "./w-rank-list" %}
+          {% require $id="./w-rank-list" %}
           {{ abc }}
         </div>
 
         {% require __pageUrl__ %}
-        {% require "./lib.js" %}
+        {% require _id="./lib.js" %}
+        {% require "app/lib.js" %}
         {% require "./" + "lib.js" %}
         {% if aaa %}
           abc
@@ -48,7 +49,6 @@ const template = `
 describe('parse', () => {
   it('should parse without error', () => {
     const options = {
-      baseDir: path.join(__dirname, '../app/component/'),
       compress: true,
       attrAlias: {
         _id: '$id',
@@ -64,7 +64,6 @@ describe('parse', () => {
       realpath: path.join(__dirname, '../app/component/page/test/test.tpl')
     }, options);
 
-    options.baseDir = path.join(__dirname, '../app/component');
     const nstring2 = pageletParser(template, {
       realpath: path.join(__dirname, '../app/component/page/test/test.tpl')
     }, options);
@@ -72,7 +71,8 @@ describe('parse', () => {
     assert(nstring.match(/\n/g).length === 1);
     assert(nstring.indexOf('\nvar a = 123;') >= 0);
     assert(nstring.indexOf('require "./" + "lib.js"') >= 0);
-    assert(nstring.indexOf('"./lib.js"') >= 0);
+    assert(nstring.indexOf('"component/page/test/lib.js"') >= 0);
+    assert(nstring.indexOf('{% require "app/lib.js" %}') >= 0);
     assert(nstring.indexOf('require __pageUrl__') >= 0);
     assert(nstring.indexOf('"page/test/w-game-list"') >= 0);
     assert(nstring.indexOf('"p/widget/navigation"') >= 0);
@@ -89,9 +89,9 @@ describe('parse', () => {
        {% require "./w-rank-list" %}
     {% endpagelet %}
     `, {
-      realpath: path.join(__dirname, '../app/component/page/test/test.tpl')
+      realpath: path.join(__dirname, './ref/app/component/page/test/test.tpl')
     }, {
-      baseDir: path.join(__dirname, '../app/component'),
+      root: path.join(__dirname, './ref/'),
       split: ',',
       attrAlias: {
         _id: '$id',
@@ -112,7 +112,6 @@ describe('parse', () => {
     `, {
       realpath: path.join(__dirname, '../app/component/page/test/test.tpl')
     }, {
-      baseDir: path.join(__dirname, '../app/component'),
       split: ',',
       attrAlias: {
         _id: '$id',
@@ -133,7 +132,6 @@ describe('parse', () => {
     pageletParser('{% css %}{% endcss %}', {
       realpath: path.join(__dirname, '../app/component/page/test/test.tpl')
     }, {
-      baseDir: path.join(__dirname, '../app/component/'),
       processor: {
         css() {
           done();
