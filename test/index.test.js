@@ -69,36 +69,55 @@ describe('parse', () => {
     }, options);
 
     assert(nstring.match(/\n/g).length === 1);
-    assert(nstring.indexOf('\nvar a = 123;') >= 0);
-    assert(nstring.indexOf('require "./" + "lib.js"') >= 0);
-    assert(nstring.indexOf('"component/page/test/lib.js"') >= 0);
-    assert(nstring.indexOf('{% require "app/lib.js" %}') >= 0);
-    assert(nstring.indexOf('require __pageUrl__') >= 0);
-    assert(nstring.indexOf('"page/test/w-game-list"') >= 0);
-    assert(nstring.indexOf('"p/widget/navigation"') >= 0);
-    assert(nstring.indexOf('$id="gameList"') >= 0);
-    assert(nstring.indexOf('"page/test/w-rank-list"') >= 0);
-    assert(nstring.indexOf('"widget/test"') >= 0);
-    assert(nstring.indexOf('"m/widget/foot"') >= 0);
-    assert(nstring2.indexOf('"page/test/w-game-list"') >= 0);
+    assert(nstring.includes('\nvar a = 123;'));
+    assert(nstring.includes('require "./" + "lib.js"'));
+    assert(nstring.includes('"component/page/test/lib.js"'));
+    assert(nstring.includes('{% require "app/lib.js" %}'));
+    assert(nstring.includes('require __pageUrl__'));
+    assert(nstring.includes('"page/test/w-game-list"'));
+    assert(nstring.includes('"p/widget/navigation"'));
+    assert(nstring.includes('$id="gameList"'));
+    assert(nstring.includes('"page/test/w-rank-list"'));
+    assert(nstring.includes('"widget/test"'));
+    assert(nstring.includes('"m/widget/foot"'));
+    assert(nstring2.includes('"page/test/w-game-list"'));
   });
 
   it('should parse with appoint split key', () => {
     const nstring = pageletParser(`
-    {% pagelet _id="gameList", id="gameList", ref="gameList" %}
+    {% pagelet _id="gameList"; id="gameList"; ref="gameList" %}
        {% require "./w-rank-list" %}
     {% endpagelet %}
     `, {
       realpath: path.join(__dirname, './ref/app/component/page/test/test.tpl')
     }, {
       root: path.join(__dirname, './ref/'),
-      split: ',',
+      split: ';',
       attrAlias: {
         _id: '$id',
       },
     });
 
-    assert(nstring.indexOf('$id="gameList"') >= 0);
+    assert(nstring.includes('$id="gameList"; id="gameList"; ref="gameList"'));
+  });
+
+  it('should parse without error without split key', () => {
+    const nstring = pageletParser(`
+    {% pagelet _id="gameList" id="gameList" ref="gameList" %}{% endpagelet %}
+    {% pagelet _id="gameList2", id="gameList2", ref="gameList2" %}{% endpagelet %}
+    {% pagelet _id="gameList3" id={a: '1', b: '2'} ref="gameList3" %}{% endpagelet %}
+    `, {
+      realpath: path.join(__dirname, './ref/app/component/page/test/test.tpl')
+    }, {
+      root: path.join(__dirname, './ref/'),
+      attrAlias: {
+        _id: '$id',
+      },
+    });
+
+    assert(nstring.includes('$id="gameList" id="gameList" ref="gameList"'));
+    assert(nstring.includes('$id="gameList2", id="gameList2", ref="gameList2"'));
+    assert(nstring.includes(`$id="gameList3" id={a: '1', b: '2'} ref="gameList3"`));
   });
 
   it('should support resolve and full resolve', () => {
@@ -122,10 +141,10 @@ describe('parse', () => {
       },
     });
 
-    assert(nstring.indexOf('{% require "page/test/w-rank-list", id="123" %}') >= 0);
-    assert(nstring.indexOf('{% require "widget/w-rank-list" %}') >= 0);
-    assert(nstring.indexOf('{% require "widget/index" %}') >= 0);
-    assert(nstring.indexOf('{% require "index$", id="123" %}') >= 0);
+    assert(nstring.includes('{% require "page/test/w-rank-list", id="123" %}'));
+    assert(nstring.includes('{% require "widget/w-rank-list" %}'));
+    assert(nstring.includes('{% require "widget/index" %}'));
+    assert(nstring.includes('{% require "index$", id="123" %}'));
   })
 
   it('should support self defined tag', done => {

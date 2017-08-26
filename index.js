@@ -5,32 +5,36 @@ const path = require('path');
 const parser = require('node-mus/lib/compile/parser');
 const quotReg = /^('|")|('|")$/g;
 const spaceReg = /(>|)(?:\t| )*(?:\r?\n)+(?:\t| )*(<|)/;
+const maybeQuotReg = /,\s*[^, ]+\s*=/;
 
 function normalize(el, options) {
   const list = [];
-  options.split = options.split || '';
-  if (options.split.length > 1) {
+  let splitKey = options.split;
+
+  // guess witch split was using
+  if (!splitKey) {
+    if (el._expr.match(maybeQuotReg)) {
+      splitKey = ',';
+    } else {
+      splitKey = '';
+    }
+  } else if (splitKey.length > 1) {
     throw new Error('split key should has only one character');
   }
 
-  parser.parseNormalAttr(
-    options.split || ' ',
-    el._expr,
-    (key, _, value) => {
-      if (key) {
-        key = options.attrAlias[key] || key;
-        if (key === '$id' && el.require) {
-          value = normalizeUrl(value, options);
-        }
-        list.push(`${key}=${value}`);
-      } else {
-        list.push(
-          el.require ? normalizeUrl(value, options) : value
-        );
+  parser.parseNormalAttr(splitKey || ' ', el._expr, (key, _, value) => {
+    if (key) {
+      key = options.attrAlias[key] || key;
+      if (key === '$id' && el.require) {
+        value = normalizeUrl(value, options);
       }
-    });
+      list.push(`${key}=${value}`);
+    } else {
+      list.push(el.require ? normalizeUrl(value, options) : value);
+    }
+  });
 
-  el._expr = list.join(options.split + ' ');
+  el._expr = list.join(splitKey + ' ');
 }
 
 function normalizeUrl(url, options) {
@@ -40,10 +44,12 @@ function normalizeUrl(url, options) {
   let quot = '';
 
   // trim space and quot
-  url = url.replace(quotReg, q => {
-    quot = q;
-    return '';
-  }).trim();
+  url = url
+    .replace(quotReg, q => {
+      quot = q;
+      return '';
+    })
+    .trim();
 
   // ignore url if url was variable, having operator or ext name
   if (!quot || url.indexOf(quot) >= 0) {
@@ -68,7 +74,9 @@ function normalizeUrl(url, options) {
   }
 
   // replace alias
-  url = options._fullAlias[url] || url.replace(options._alias, (_, key) => alias[key]);
+  url =
+    options._fullAlias[url] ||
+    url.replace(options._alias, (_, key) => alias[key]);
 
   if (url.charAt(0) === '.') {
     url = path.resolve(path.dirname(file.realpath), url);
@@ -102,41 +110,48 @@ module.exports = function(content, file, options) {
     blockEnd: options.blockEnd,
     variableStart: options.variableStart,
     variableEnd: options.variableEnd,
-    processor: Object.assign({
-      pagelet(el) { normalize(el, options); },
-      require(el) {
-        el.isUnary = true;
-        normalize(el, options);
-      },
-      comment(el) { el.text = ''; },
-      text(el) {
-        if (!options.compress) {
-          return;
-        }
-
-        let matches;
-        let newText = '';
-        let text = el.text;
-        // compress template
-        while ((matches = text.match(spaceReg))) {
-          const l = matches[1] || '';
-          const r = matches[2] || '';
-          const t = text.substring(0, matches.index);
-          newText += t + l;
-
-          // prevent comment in javascript
-          if (t.indexOf('//') >= 0) {
-            newText += '\n';
-          } else if (!l && !r) {
-            newText += ' ';
+    processor: Object.assign(
+      {
+        pagelet(el) {
+          normalize(el, options);
+        },
+        require(el) {
+          el.isUnary = true;
+          normalize(el, options);
+        },
+        comment(el) {
+          el.text = '';
+        },
+        text(el) {
+          if (!options.compress) {
+            return;
           }
-          newText += r;
-          text = text.substring(matches.index + matches[0].length);
-        }
 
-        el.text = newText + text;
+          let matches;
+          let newText = '';
+          let text = el.text;
+          // compress template
+          while ((matches = text.match(spaceReg))) {
+            const l = matches[1] || '';
+            const r = matches[2] || '';
+            const t = text.substring(0, matches.index);
+            newText += t + l;
+
+            // prevent comment in javascript
+            if (t.indexOf('//') >= 0) {
+              newText += '\n';
+            } else if (!l && !r) {
+              newText += ' ';
+            }
+            newText += r;
+            text = text.substring(matches.index + matches[0].length);
+          }
+
+          el.text = newText + text;
+        },
       },
-    }, options.processor),
+      options.processor
+    ),
   });
 
   return utils.astTreeToString(tree);
