@@ -6,6 +6,7 @@ const parser = require('node-mus/lib/compile/parser');
 const quotReg = /^('|")|('|")$/g;
 const spaceReg = /(>|)(?:\t| )*(?:\r?\n)+(?:\t| )*(<|)/;
 const maybeQuotReg = /,\s*[^, ]+\s*=/;
+const handleUrlList = ['require', 'include', 'extend'];
 
 function normalize(el, options) {
   const list = [];
@@ -25,12 +26,14 @@ function normalize(el, options) {
   parser.parseNormalAttr(splitKey || ' ', el._expr, (key, _, value) => {
     if (key) {
       key = options.attrAlias[key] || key;
-      if (key === '$id' && el.require) {
+      if (key === '$id' && handleUrlList.includes(el.tag)) {
         value = normalizeUrl(value, options);
       }
       list.push(`${key}=${value}`);
     } else {
-      list.push(el.require ? normalizeUrl(value, options) : value);
+      list.push(
+        handleUrlList.includes(el.tag) ? normalizeUrl(value, options) : value
+      );
     }
   });
 
@@ -99,59 +102,53 @@ function normalizeUrl(url, options) {
   return quot + url + quot;
 }
 
+function compressTemplate(text) {
+  let matches;
+  let newText = '';
+  // compress template
+  while ((matches = text.match(spaceReg))) {
+    const l = matches[1] || '';
+    const r = matches[2] || '';
+    const t = text.substring(0, matches.index);
+    newText += t + l;
+
+    // prevent comment in javascript
+    if (t.indexOf('//') >= 0) {
+      newText += '\n';
+    } else if (!l && !r) {
+      newText += ' ';
+    }
+    newText += r;
+    text = text.substring(matches.index + matches[0].length);
+  }
+  return newText + text;
+}
+
 module.exports = function(content, file, options) {
   options.file = file;
   options.alias = options.alias || {};
   options.attrAlias = options.attrAlias || {};
   options.appDir = path.resolve(options.root || process.cwd(), './app');
 
+  const processor = {
+    pagelet: el => normalize(el, options),
+    comment: el => (el.text = ''),
+    text: el => options.compress && (el.text = compressTemplate(el.text)),
+  };
+
+  handleUrlList.forEach(key => {
+    processor[key] = function(el) {
+      el.isUnary = true;
+      normalize(el, options);
+    };
+  });
+
   const tree = utils.parseTemplate(content, {
     blockStart: options.blockStart,
     blockEnd: options.blockEnd,
     variableStart: options.variableStart,
     variableEnd: options.variableEnd,
-    processor: Object.assign(
-      {
-        pagelet(el) {
-          normalize(el, options);
-        },
-        require(el) {
-          el.isUnary = true;
-          normalize(el, options);
-        },
-        comment(el) {
-          el.text = '';
-        },
-        text(el) {
-          if (!options.compress) {
-            return;
-          }
-
-          let matches;
-          let newText = '';
-          let text = el.text;
-          // compress template
-          while ((matches = text.match(spaceReg))) {
-            const l = matches[1] || '';
-            const r = matches[2] || '';
-            const t = text.substring(0, matches.index);
-            newText += t + l;
-
-            // prevent comment in javascript
-            if (t.indexOf('//') >= 0) {
-              newText += '\n';
-            } else if (!l && !r) {
-              newText += ' ';
-            }
-            newText += r;
-            text = text.substring(matches.index + matches[0].length);
-          }
-
-          el.text = newText + text;
-        },
-      },
-      options.processor
-    ),
+    processor: Object.assign(processor, options.processor),
   });
 
   return utils.astTreeToString(tree);

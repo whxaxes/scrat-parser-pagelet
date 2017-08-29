@@ -9,6 +9,8 @@ const template = `
 {% body %}
   <div id="app">
     {% require "~p/navigation" %}
+    {% extend "~p/navigation" %}
+    {% include "~p/navigation" %}
   
     {% pagelet _id="gameList" id="gameList" ref="gameList" %}
       <div class="content">
@@ -75,7 +77,9 @@ describe('parse', () => {
     assert(nstring.includes('{% require "app/lib.js" %}'));
     assert(nstring.includes('require __pageUrl__'));
     assert(nstring.includes('"page/test/w-game-list"'));
-    assert(nstring.includes('"p/widget/navigation"'));
+    assert(nstring.includes('{% require "p/widget/navigation" %}'));
+    assert(nstring.includes('{% include "p/widget/navigation" %}'));
+    assert(nstring.includes('{% extend "p/widget/navigation" %}'));
     assert(nstring.includes('$id="gameList"'));
     assert(nstring.includes('"page/test/w-rank-list"'));
     assert(nstring.includes('"widget/test"'));

@@ -141,55 +141,6 @@ attrAlias: {
 <div id="app">{% require "p/widget/navigation" %}<div class="content"><div class="left-side">{% require "p/page/index/w-game-list" %}</div><div class="right-side">{% require "p/page/index/w-rank-list" %}</div></div>{% require "p/widget/foot" %}</div>
 ```
 
-### 批量转换工具
-
-组件还提供一个 transformer ，可以根据你设定的规则，对全部页面进行一次批量处理替换。单独将以下逻辑放到一个 js 文件中执行即可。
-
-```js
-const transform = require('scrat-parser-pagelet/transform');
-transform({
-  src: [path.resolve(__dirname, './app/**/*.tpl')],
-  dist: path.resolve(__dirname, './app/'),
-  baseDir: path.join(__dirname, './app/component/'),
-  attrAlias: {
-    _id: '$id',
-  },
-  alias: {
-    '~': 'widget',
-  },
-}, () => {
-  console.log('转换完成')
-});
-```
-
-转换前：
-
-```html
-<div class="test">
-  {% pagelet $id="test" %}
-    {% require $id="page/test/w-m" blab="123123" %}
-  {% endpagelet %}
-
-  {% require $id="page/test/w-s" %}
-  {% require $id="widget/common" abc="123123" %}
-</div>
-```
-
-转换后：
-
-```html
-<div class="test">
-  {% pagelet "test" %}
-    {% require _id="./w-m" blab="123123" %}
-  {% endpagelet %}
-
-  {% require "./w-s" %}
-  {% require _id="~/common" abc="123123" %}
-</div>
-```
-
-会自动对模板做优化，如果只有一个属性，就去除 $id，自动将链接转成相对链，自动将 alias 替换到页面中。
-
 ### 自定义 processor
 
 允许覆盖组件的 processor，做一些自己想干的活。比如组件的压缩功能，就是在 text 这个 processor 中做的
@@ -218,21 +169,6 @@ processor: {
   }
 }
 ```
-
-### 一些说明
-
-为什么不做在 pagelet 中呢
-
-> 因为 pagelet 是跑在运行时，而这些处理在编译时处理了更好。
-
-组件实现原理
-
-> 解析模板，生成 AST，再逐个节点处理即可。
-
-为什么不用 nunjucks 或者 swig 自己的 AST 解析器
-
-> swig 没看源码，反正 nunjucks 没有生成 AST 这个概念，是直接一边解析一边拼装方法字符串。所以没法用，刚好自己之前实现过一个类似于 nunjucks 的模板引擎 [mus](https://github.com/whxaxes/mus) ，就把 parser 拿过来用了。
-
 
 [npm-url]: https://npmjs.org/package/scrat-parser-pagelet
 [npm-image]: http://img.shields.io/npm/v/scrat-parser-pagelet.svg

@@ -53,6 +53,7 @@ module.exports = {
 
   parseTemplate(str, options) {
     // parse template by node-mus
+    /* istanbul ignore next */
     return ast(str, Object.assign(options, {
       processor: Object.assign({
         comment() {},
