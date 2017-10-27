@@ -24,7 +24,7 @@
   "author": "wanghx",
   "license": "MIT",
   "dependencies": {
-    "node-mus": "~1.6.2",
+    "node-mus": "^1.7.0",
     "through2": "^2.0.3",
     "vinyl-fs": "^2.4.4"
   },

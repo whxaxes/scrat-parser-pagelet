@@ -1,9 +1,37 @@
 'use strict';
 
 const ast = require('node-mus/lib/compile/ast');
+const constant = require('node-mus/lib/compile/constant');
 const regexEscapeRE = /[-.*+?^${}()|[\]\/\\]/g;
 
 module.exports = {
+  preprocess: {
+    comment() {},
+    pagelet() {},
+    require(el) { el.isUnary = true; },
+    datalet(el) { el.isUnary = true; },
+    html() {},
+    head() {},
+    body() {},
+    title() {},
+    for() {},
+    uri(el) { el.isUnary = true; },
+    script() {},
+    variable() {},
+    ATF(el) { el.isUnary = true; },
+    macro() {},
+    extends(el) { el.isUnary = true; },
+    block() {},
+    include(el) { el.isUnary = true; },
+    import(el) { el.isUnary = true; },
+    autoescape() {},
+    verbatim() {},
+    call() {},
+    parent(el) { el.isUnary = true; },
+    spaceless() {},
+  },
+  postprocess: text => text,
+
   astTreeToString(astTree) {
     let html = '';
     if (!astTree) {
@@ -11,15 +39,16 @@ module.exports = {
     }
 
     astTree.forEach(ast => {
+      let fragment = '';
       switch (ast.type) {
-        case 1:
-          html += this.astNodeToString(ast);
+        case constant.TYPE_TAG:
+          fragment += this.astNodeToString(ast);
           break;
-        case 2:
-          html += ast.text;
+        case constant.TYPE_TEXT:
+          fragment += ast.text;
           break;
-        case 3:
-          html += `${ast._ast.variableStart} ${ast._expr.trim()} ${ast._ast.variableEnd}`;
+        case constant.TYPE_VAR:
+          fragment += `${ast._ast.variableStart} ${ast.text.trim()} ${ast._ast.variableEnd}`;
           break;
         default:
           break;
@@ -27,17 +56,19 @@ module.exports = {
 
       if (ast.elseifBlock) {
         ast.elseifBlock.forEach(_a => {
-          html += this.astNodeToString(_a);
+          fragment += this.astNodeToString(_a);
         });
       }
 
       if (ast.elseBlock) {
-        html += this.astNodeToString(ast.elseBlock);
+        fragment += this.astNodeToString(ast.elseBlock);
       }
 
-      if (!ast.isUnary && ast.type === 1) {
-        html += `${ast._ast.blockStart} end${ast.tag} ${ast._ast.blockEnd}`;
+      if (!ast.isUnary && ast.type === constant.TYPE_TAG) {
+        fragment += `${ast._ast.blockStart} end${ast.tag} ${ast._ast.blockEnd}`;
       }
+
+      html += this.postprocess(fragment, ast);
     });
 
     return html;
@@ -45,41 +76,18 @@ module.exports = {
 
   astNodeToString(ast) {
     let html = `${ast._ast.blockStart} ${ast.tag}`;
-    const expr = ast._expr.trim();
+    const expr = ast.text.trim();
     html += expr ? ` ${expr}` : '';
     html += ' ' + ast._ast.blockEnd;
-    return html + this.astTreeToString(ast.children);
+    ast.innerText = this.astTreeToString(ast.children);
+    return html + ast.innerText;
   },
 
-  parseTemplate(str, options) {
+  parseTemplate(str, options = {}) {
     // parse template by node-mus
     /* istanbul ignore next */
     return ast(str, Object.assign(options, {
-      processor: Object.assign({
-        comment() {},
-        pagelet() {},
-        require(el) { el.isUnary = true; },
-        datalet(el) { el.isUnary = true; },
-        html() {},
-        head() {},
-        body() {},
-        title() {},
-        for() {},
-        uri(el) { el.isUnary = true; },
-        script() {},
-        variable() {},
-        ATF(el) { el.isUnary = true; },
-        macro() {},
-        extends(el) { el.isUnary = true; },
-        block() {},
-        include(el) { el.isUnary = true; },
-        import(el) { el.isUnary = true; },
-        autoescape() {},
-        verbatim() {},
-        call() {},
-        parent(el) { el.isUnary = true; },
-        spaceless() {},
-      }, options.processor),
+      processor: Object.assign({}, this.preprocess, options.processor),
     })).root;
   },
 

@@ -14,7 +14,7 @@ function normalize(el, options) {
 
   // guess witch split was using
   if (!splitKey) {
-    if (el._expr.match(maybeQuotReg)) {
+    if (el.text.match(maybeQuotReg)) {
       splitKey = ',';
     } else {
       splitKey = '';
@@ -23,7 +23,7 @@ function normalize(el, options) {
     throw new Error('split key should has only one character');
   }
 
-  parser.parseNormalAttr(splitKey || ' ', el._expr, (key, _, value) => {
+  parser.parseNormalAttr(splitKey || ' ', el.text, (key, _, value) => {
     if (key) {
       key = options.attrAlias[key] || key;
       if (key === '$id' && handleUrlList.includes(el.tag)) {
@@ -37,7 +37,7 @@ function normalize(el, options) {
     }
   });
 
-  el._expr = list.join(splitKey + ' ');
+  el.text = list.join(splitKey + ' ');
 }
 
 function normalizeUrl(url, options) {
@@ -105,6 +105,7 @@ function normalizeUrl(url, options) {
 function compressTemplate(text) {
   let matches;
   let newText = '';
+
   // compress template
   while ((matches = text.match(spaceReg))) {
     const l = matches[1] || '';
