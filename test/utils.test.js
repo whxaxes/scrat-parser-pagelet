@@ -31,14 +31,13 @@ const template = `
 
 describe('utils', () => {
   it('#astTreeToString', () => {
-    const ast = utils.parseTemplate(template);
-    utils.postprocess = (frag, ast) => {
+    const astTree = utils.parseTemplate(template);
+    assert(utils.astTreeToString(astTree, (frag, ast) => {
       if (ast.tag === 'block' && ast.text === 'body') {
         return frag.replace(ast.innerText, ast.innerText + '<123123>');
       } else {
         return frag;
       }
-    };
-    assert(utils.astTreeToString(ast).includes('<123123>{% endblock %}'))
+    }).includes('<123123>{% endblock %}'))
   });
 });
